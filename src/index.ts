@@ -8,7 +8,10 @@ class ValidationError {
 	}
 
 	public get message(): string {
-		return `[$${this.path.join("")}] ${this.problem}`;
+		let message = this.problem;
+		if (this.path.length > 0) message += ` ($${this.path.join("")})`;
+
+		return message;
 	}
 
 	public wrapPath(...outerPath: string[]) {
@@ -53,6 +56,11 @@ abstract class Validator<T> {
 	}
 }
 
+function valueDescriptor(value: unknown) {
+	if (value === null) return "null";
+	return `type ${typeof value}`;
+}
+
 class SimpleValidator<T> extends Validator<T> {
 	private typeStr: string;
 
@@ -65,7 +73,7 @@ class SimpleValidator<T> extends Validator<T> {
 		if (typeof val === this.typeStr) return valid();
 		return invalid(
 			new ValidationError(
-				`Expected type ${this.typeStr}, found type ${typeof val}`
+				`Expected type ${this.typeStr}, found ${valueDescriptor(val)}`
 			)
 		);
 	}
@@ -86,13 +94,10 @@ class ObjectValidator<T extends BasicObject> extends Validator<T> {
 	}
 
 	public validate(val: unknown): ValidationResult {
-		if (typeof val !== "object") {
+		if (typeof val !== "object" || val === null) {
 			return invalid(
-				new ValidationError(`Expected an object, found type ${typeof val}`)
+				new ValidationError(`Expected an object, found ${valueDescriptor(val)}`)
 			);
-		}
-		if (val === null) {
-			return invalid(new ValidationError("Value cannot be null"));
 		}
 		for (const [key, value] of Object.entries(val as BasicObject)) {
 			if (!(key in this.structure)) continue;
@@ -115,7 +120,7 @@ class ArrayValidator<T> extends Validator<T[]> {
 	public validate(val: unknown): ValidationResult {
 		if (!Array.isArray(val)) {
 			return invalid(
-				new ValidationError(`Expected an array, found type ${typeof val}`)
+				new ValidationError(`Expected an array, found ${valueDescriptor(val)}`)
 			);
 		}
 		for (let i = 0; i < val.length; i++) {
@@ -144,7 +149,7 @@ class UnionValidator<A, B> extends Validator<A | B> {
 		if (res2.valid) return valid();
 		return invalid(
 			new ValidationError(
-				`No validators were satisfied (${res1.error.message}, ${res2.error.message})`
+				`No validators were satisfied (${res1.error.message}; ${res2.error.message})`
 			)
 		);
 	}
@@ -252,6 +257,7 @@ export default ty;
 export { ValidationError, ValidationAssertionError };
 
 export type {
+	Validator,
 	ValidatedBy,
 	ValidationResult,
 	ValidationResultOk,
