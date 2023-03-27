@@ -1,3 +1,9 @@
+/**
+ * **NOTE**: This type should not be thrown.
+ *
+ * An object that holds information about why a particular value was not accepted
+ * by a validator.
+ */
 class ValidationError {
 	private readonly problem: string;
 	private readonly path: string[];
@@ -7,6 +13,9 @@ class ValidationError {
 		this.path = path;
 	}
 
+	/**
+	 * A human-readable error message explaining the reason why the value wasn't accepted by the validator.
+	 */
 	public get message(): string {
 		let message = this.problem;
 		if (this.path.length > 0) message += ` ($${this.path.join("")})`;
@@ -19,6 +28,9 @@ class ValidationError {
 	}
 }
 
+/**
+ * The error that is thrown when a call to `assert` on a `Validator` fails.
+ */
 class ValidationAssertionError extends Error {
 	constructor(err: ValidationError, context: string) {
 		super(`${context}: ${err}`);
@@ -28,6 +40,10 @@ class ValidationAssertionError extends Error {
 type ValidationResultErr = { valid: false; error: ValidationError };
 type ValidationResultOk = { valid: true };
 
+/**
+ * The result of a validation. It has two fields; `valid`, a boolean, shows whether the value was accepted.
+ * If not, `error` contains the reason why not.
+ */
 type ValidationResult = ValidationResultOk | ValidationResultErr;
 
 function valid(): ValidationResultOk {
@@ -38,13 +54,26 @@ function invalid(error: ValidationError): ValidationResultErr {
 	return { valid: false, error };
 }
 
+/**
+ * A validator that accepts values of type T.
+ */
 abstract class Validator<T> {
 	public abstract validate(val: unknown): ValidationResult;
 
+	/**
+	 * @param val The value to check
+	 * @returns a boolean indicating whether `val` was accepted or not
+	 */
 	public check(val: unknown): val is T {
 		return this.validate(val).valid;
 	}
 
+	/**
+	 * Throws an error when `val` is not accepted
+	 *
+	 * @param val The value to check
+	 * @param context Provide additional context for more useful error messages
+	 */
 	public assert(val: unknown, context?: string): asserts val is T {
 		const res = this.validate(val);
 		if (!res.valid) {
@@ -244,55 +273,172 @@ class OptionalValidator<T> extends Validator<T | undefined> {
 
 type ValidatedBy<V> = V extends Validator<infer T> ? T : never;
 
+/**
+ * The namespace of all supported type validators.
+ * See <https://github.com/nicholas-roether/lifeboat> for a list.
+ */
 const ty = {
+	/**
+	 * @returns A validator that accepts only `undefined`.
+	 */
 	undefined(): Validator<undefined> {
 		return new SimpleValidator("undefined");
 	},
+	/**
+	 * @returns A validator that accepts only booleans.
+	 */
 	boolean(): Validator<boolean> {
 		return new SimpleValidator("boolean");
 	},
+	/**
+	 * @returns A validator that accepts only numbers.
+	 */
 	number(): Validator<number> {
 		return new SimpleValidator("number");
 	},
+	/**
+	 * @returns A validator that accepts only bigints.
+	 */
 	bigint(): Validator<bigint> {
 		return new SimpleValidator("bigint");
 	},
+	/**
+	 * @returns A validator that accepts only strings.
+	 */
 	string(): Validator<string> {
 		return new SimpleValidator("string");
 	},
+	/**
+	 * @returns A validator that accepts only symbols.
+	 */
 	symbol(): Validator<symbol> {
 		return new SimpleValidator("symbol");
 	},
+	/**
+	 * This method allows you to create validators for object types with specific shapes,
+	 * for example:
+	 *
+	 * ```ts
+	 * const userSchema = ty.object({
+	 *    name: ty.string(),
+	 *    age: ty.number(),
+	 *    friendList: ty.array(ty.string())
+	 * })
+	 * ```
+	 *
+	 * Note that validators created this way will never accept null. If you want to make a value
+	 * nullable, do so explicitly using `ty.nullable`.
+	 *
+	 * @param structure The structure of the object type
+	 * @returns A validator that accepts only objects with the specified structure
+	 */
 	object<T extends BasicObject>(structure: ObjectStructure<T>): Validator<T> {
 		return new ObjectValidator(structure);
 	},
+	/**
+	 * This method allows to create validators for array types, for example:
+	 *
+	 * ```ts
+	 * const arrayOfNumbers = ty.array(ty.number())
+	 * ```
+	 *
+	 * @param itemValidator The validator that the array items have to conform to
+	 * @returns A validator that accepts only arrays with items of the specified type
+	 */
 	array<T>(itemValidator: Validator<T>): Validator<T[]> {
 		return new ArrayValidator(itemValidator);
 	},
+	/**
+	 * Makes a value optional, meaning that `undefined` is allowed in addition to the inner type.
+	 *
+	 * @param validator The validator for the inner type
+	 * @returns A validator that accepts either `undefined`, or any type accepted by `validator`
+	 */
 	optional<T>(validator: Validator<T>): Validator<T | undefined> {
 		return new OptionalValidator(validator);
 	},
+	/**
+	 * Makes a value nullable, meaning that `null` is allowed in addition to the inner type.
+	 *
+	 * @param validator The validator for the inner type
+	 * @returns A validator that accepts either `null`, or any type accepted by `validator`
+	 */
 	nullable<T>(validator: Validator<T>): Validator<T | null> {
 		return new NullableValidator(validator);
 	},
+	/**
+	 * Combines the functionality of `ty.nullable` and `ty.optional` to allow any nullish value
+	 * (`null` or `undefined`) in addition to the inner type
+	 *
+	 * @param validator The validator for the inner type
+	 * @returns A validator that accepts either `null`, `undefined`, or any type accepted by `validator`
+	 */
 	allowNullish<T>(validator: Validator<T>): Validator<T | null | undefined> {
 		return ty.optional(ty.nullable(validator));
 	},
+	/**
+	 * This method allows you to handle union types. For example, the type `string | number`
+	 * would be represented like this:
+	 *
+	 * ```ts
+	 * const stringOrNumber = ty.union(ty.string(), ty.number());
+	 * ```
+	 *
+	 * **IMPORTANT**: If you are just representing unions of strings, consider using
+	 * `ty.stringUnion` instead for more ergonomic usage and more meaningful error messages.
+	 *
+	 * @param validator1 The first type
+	 * @param validator2 The second type
+	 * @returns A validator that accepts a union of the first and the second type
+	 */
 	union<A, B>(
 		validator1: Validator<A>,
 		validator2: Validator<B>
 	): Validator<A | B> {
 		return new UnionValidator(validator1, validator2);
 	},
+	/**
+	 * This method allows you to form type intersections. This is rarely useful in this library's
+	 * indended use case, and you should probably avoid using it unless necessary.
+	 *
+	 * @param validator1 The first type
+	 * @param validator2 The second type
+	 * @returns A validator that accepts anything that both the first and second validator accept
+	 */
 	intersection<A, B>(
 		validator1: Validator<A>,
 		validator2: Validator<B>
 	): Validator<A & B> {
 		return new IntersectionValidator(validator1, validator2);
 	},
+	/**
+	 * This method allows you to only accept exact values, for example:
+	 *
+	 * ```ts
+	 * const only69 = ty.equals(69 as const);
+	 * ```
+	 *
+	 * **IMPORTANT**: Note the use of `as const`; this is required to make the type inference work properly
+	 *
+	 * The validator producted this way uses strict equality (`===`) for its comparisons.
+	 *
+	 * @param value The exact value to match
+	 * @returns A validator that accepts only `value` exactly.
+	 */
 	equals<T>(value: T): Validator<T> {
 		return new ExactValidator(value);
 	},
+	/**
+	 * This method allows you to accept string unions. For example, "abc" | "cde" | "def"
+	 * would be represented like this:
+	 *
+	 * ```ts
+	 * const stringUnion = ty.stringUnion("abc", "cde", "def");
+	 * ```
+	 *
+	 * @param values All strings in the union
+	 * @returns A validator that matches any string in `values`
+	 */
 	stringUnion<T extends string>(...values: readonly T[]): Validator<T> {
 		return new StringUnionValidator(...values);
 	}
