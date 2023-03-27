@@ -14,7 +14,8 @@
   "scripts": {
     "build": "tsc",
     "test": "mocha",
-    "prepare": "yarn test && yarn build"
+    "prepack": "yarn build",
+    "prepublish": "yarn test"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.1",
