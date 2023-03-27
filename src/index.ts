@@ -78,7 +78,7 @@ type ObjectStructure<T> = {
 };
 
 class ObjectValidator<T extends BasicObject> extends Validator<T> {
-	private structure: ObjectStructure<T>;
+	private readonly structure: ObjectStructure<T>;
 
 	constructor(structure: ObjectStructure<T>) {
 		super();
@@ -105,7 +105,7 @@ class ObjectValidator<T extends BasicObject> extends Validator<T> {
 }
 
 class ArrayValidator<T> extends Validator<T[]> {
-	private itemValidator: Validator<T>;
+	private readonly itemValidator: Validator<T>;
 
 	constructor(itemValidator: Validator<T>) {
 		super();
@@ -124,6 +124,76 @@ class ArrayValidator<T> extends Validator<T[]> {
 			return invalid(res.error.wrapPath(`[${i}]`));
 		}
 		return valid();
+	}
+}
+
+class UnionValidator<A, B> extends Validator<A | B> {
+	private readonly validator1: Validator<A>;
+	private readonly validator2: Validator<B>;
+
+	constructor(validator1: Validator<A>, validator2: Validator<B>) {
+		super();
+		this.validator1 = validator1;
+		this.validator2 = validator2;
+	}
+
+	public validate(val: unknown): ValidationResult {
+		const res1 = this.validator1.validate(val);
+		if (res1.valid) return valid();
+		const res2 = this.validator2.validate(val);
+		if (res2.valid) return valid();
+		return invalid(
+			new ValidationError(
+				`No validators were satisfied (${res1.error.message}, ${res2.error.message})`
+			)
+		);
+	}
+}
+
+class IntersectionValidator<A, B> extends Validator<A & B> {
+	private readonly validator1: Validator<A>;
+	private readonly validator2: Validator<B>;
+
+	constructor(validator1: Validator<A>, validator2: Validator<B>) {
+		super();
+		this.validator1 = validator1;
+		this.validator2 = validator2;
+	}
+
+	public validate(val: unknown): ValidationResult {
+		const res1 = this.validator1.validate(val);
+		if (!res1.valid) return res1;
+		const res2 = this.validator2.validate(val);
+		if (!res2.valid) return res2;
+		return valid();
+	}
+}
+
+class NullableValidator<T> extends Validator<T | null> {
+	private readonly validator: Validator<T>;
+
+	constructor(validator: Validator<T>) {
+		super();
+		this.validator = validator;
+	}
+
+	public validate(val: unknown): ValidationResult {
+		if (val === null) return valid();
+		return this.validator.validate(val);
+	}
+}
+
+class OptionalValidator<T> extends Validator<T | undefined> {
+	private readonly validator: Validator<T>;
+
+	constructor(validator: Validator<T>) {
+		super();
+		this.validator = validator;
+	}
+
+	public validate(val: unknown): ValidationResult {
+		if (val === undefined) return valid();
+		return this.validator.validate(val);
 	}
 }
 
@@ -153,5 +223,26 @@ const ty = {
 	},
 	array<T>(itemValidator: Validator<T>): Validator<T[]> {
 		return new ArrayValidator(itemValidator);
+	},
+	optional<T>(validator: Validator<T>): Validator<T | undefined> {
+		return new OptionalValidator(validator);
+	},
+	nullable<T>(validator: Validator<T>): Validator<T | null> {
+		return new NullableValidator(validator);
+	},
+	allowNullish<T>(validator: Validator<T>): Validator<T | null | undefined> {
+		return ty.optional(ty.nullable(validator));
+	},
+	union<A, B>(
+		validator1: Validator<A>,
+		validator2: Validator<B>
+	): Validator<A | B> {
+		return new UnionValidator(validator1, validator2);
+	},
+	intersection<A, B>(
+		validator1: Validator<A>,
+		validator2: Validator<B>
+	): Validator<A & B> {
+		return new IntersectionValidator(validator1, validator2);
 	}
 };
