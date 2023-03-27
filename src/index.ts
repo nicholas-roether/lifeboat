@@ -61,6 +61,46 @@ function valueDescriptor(value: unknown) {
 	return `type ${typeof value}`;
 }
 
+class ExactValidator<T> extends Validator<T> {
+	private value: T;
+
+	constructor(value: T) {
+		super();
+		this.value = value;
+	}
+
+	public validate(val: unknown): ValidationResult {
+		if (val === this.value) return valid();
+		return invalid(
+			new ValidationError(
+				`Expected ${JSON.stringify(this.value)}, found ${JSON.stringify(val)}`
+			)
+		);
+	}
+}
+
+class StringUnionValidator<T extends string> extends Validator<T> {
+	private values: readonly string[];
+
+	constructor(...values: readonly T[]) {
+		super();
+		this.values = values;
+	}
+
+	public validate(val: unknown): ValidationResult {
+		if (typeof val !== "string" || !this.values.includes(val)) {
+			return invalid(
+				new ValidationError(
+					`Expected one of [${this.values
+						.map((v) => JSON.stringify(v))
+						.join(", ")}], found ${JSON.stringify(val)}`
+				)
+			);
+		}
+		return valid();
+	}
+}
+
 class SimpleValidator<T> extends Validator<T> {
 	private typeStr: string;
 
@@ -249,6 +289,12 @@ const ty = {
 		validator2: Validator<B>
 	): Validator<A & B> {
 		return new IntersectionValidator(validator1, validator2);
+	},
+	equals<T>(value: T): Validator<T> {
+		return new ExactValidator(value);
+	},
+	stringUnion<T extends string>(...values: readonly T[]): Validator<T> {
+		return new StringUnionValidator(...values);
 	}
 };
 

@@ -410,3 +410,40 @@ describe("ty.intersection", () => {
 		assert.strictEqual(res.valid, true);
 	});
 });
+
+describe("ty.equals", () => {
+	it("allows the correct value", () => {
+		const schema = ty.equals(2 as const);
+
+		const res = schema.validate(2);
+		assert.strictEqual(res.valid, true);
+	});
+
+	it("disallows incorrect values", () => {
+		const schema = ty.equals(2 as const);
+
+		const res = schema.validate(3);
+		assert.strictEqual(res.valid, false);
+		assert.strictEqual(res.error.message, "Expected 2, found 3");
+	});
+});
+
+describe("ty.stringUnion", () => {
+	it("allows correct values", () => {
+		const schema = ty.stringUnion("a", "b");
+
+		const res = schema.validate("a");
+		assert.strictEqual(res.valid, true);
+	});
+
+	it("disallows incorrect values", () => {
+		const schema = ty.stringUnion("a", "b");
+
+		const res = schema.validate("c");
+		assert.strictEqual(res.valid, false);
+		assert.strictEqual(
+			res.error.message,
+			'Expected one of ["a", "b"], found "c"'
+		);
+	});
+});
