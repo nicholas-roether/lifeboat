@@ -246,3 +246,14 @@ const ty = {
 		return new IntersectionValidator(validator1, validator2);
 	}
 };
+
+export default ty;
+
+export { ValidationError, ValidationAssertionError };
+
+export type {
+	ValidatedBy,
+	ValidationResult,
+	ValidationResultOk,
+	ValidationResultErr
+};
