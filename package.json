@@ -1,6 +1,6 @@
 {
   "name": "lifeboat",
-  "version": "1.0.0",
+  "version": "1.0.0+1",
   "description": "Dead simple typescript type guard generation",
   "keywords": ["typescript", "schema", "validation", "guard", "type", "inference"],
   "main": "./dist/index.js",
