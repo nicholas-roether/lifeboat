@@ -1,0 +1,16 @@
+{
+  "name": "lifeboat",
+  "version": "1.0.0",
+  "description": "Dead simple typescript type guard generation",
+  "main": "src/index.ts",
+  "repository": "https://github.com/nicholas-roether/lifeboat.git",
+  "author": "Nicholas Roether <nicholas.roether@t-online.de>",
+  "license": "MIT",
+  "packageManager": "yarn@3.5.0",
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2"
+  }
+}
