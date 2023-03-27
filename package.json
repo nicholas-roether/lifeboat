@@ -2,14 +2,19 @@
   "name": "lifeboat",
   "version": "1.0.0",
   "description": "Dead simple typescript type guard generation",
-  "main": "src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "repository": "https://github.com/nicholas-roether/lifeboat.git",
   "author": "Nicholas Roether <nicholas.roether@t-online.de>",
   "license": "MIT",
   "packageManager": "yarn@3.5.0",
+  "files": [
+    "/dist"
+  ],
   "scripts": {
     "build": "tsc",
-    "test": "mocha"
+    "test": "mocha",
+    "prepare": "yarn test && yarn build"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.1",
