@@ -10,6 +10,7 @@
 		"declarationMap": true,
 		"declarationDir": "./dist",
 		"outDir": "./dist",
-		"rootDir": "./src"
+		"rootDir": "./src",
+		"types": ["mocha", "node"]
 	}
 }
