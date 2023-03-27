@@ -61,20 +61,16 @@ abstract class Validator<T> {
 	public abstract validate(val: unknown): ValidationResult;
 
 	/**
-	 * @param val The value to check
-	 * @returns a boolean indicating whether `val` was accepted or not
+	 * Don't call this method directly, use the global function `checkType` insteaed
 	 */
-	public check(val: unknown): val is T {
+	public _check(val: unknown): val is T {
 		return this.validate(val).valid;
 	}
 
 	/**
-	 * Throws an error when `val` is not accepted
-	 *
-	 * @param val The value to check
-	 * @param context Provide additional context for more useful error messages
+	 * Don't call this method directly, use the global function `assertType` insteaed
 	 */
-	public assert(val: unknown, context?: string): asserts val is T {
+	public _assert(val: unknown, context?: string): asserts val is T {
 		const res = this.validate(val);
 		if (!res.valid) {
 			throw new ValidationAssertionError(
@@ -444,9 +440,35 @@ const ty = {
 	}
 };
 
+/**
+ * Returns `true` when `validator` accepts `value`, and `false` otherwise.
+ *
+ * @param validator The validator to use for validation
+ * @param value The value to check
+ * @returns A boolean indicating whether `validator` accepts `value`
+ */
+function checkType<T>(validator: Validator<T>, value: unknown): value is T {
+	return validator._check(value);
+}
+
+/**
+ * Throws an error when `validator` doesn't accept `value`.
+ *
+ * @param validator The validator to use for validation
+ * @param value The value to check
+ * @param context Provide additional context for more useful error messages
+ */
+function assertType<T>(
+	validator: Validator<T>,
+	value: unknown,
+	context?: string
+): asserts value is T {
+	validator._assert(value, context);
+}
+
 export default ty;
 
-export { ValidationError, ValidationAssertionError };
+export { ValidationError, ValidationAssertionError, checkType, assertType };
 
 export type {
 	Validator,

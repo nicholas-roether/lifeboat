@@ -19,16 +19,18 @@ const userSchema = ty.object({
 type User = ValidatedBy<typeof userSchema>;
 ```
 
-`userSchema` now exposes two functions, `check` and `assert`:
+With `userSchema` you can now use the two functions `checkType` and `assertType`:
 
 ```ts
+import { checkType, assertType } from "lifeboat";
+
 // Returns true when `data` is of type User, and false otherwise.
 // Functions as a type guard.
-const isUser = userSchema.check(data);
+const isUser = checkType(userSchema, data);
 
 // Throws an error when `data` is not of type User.
 // Functions as a type assertion.
-userSchema.assert(data);
+assertType(userSchema, data);
 ```
 
 ## Reference
