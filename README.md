@@ -33,6 +33,12 @@ const isUser = checkType(userSchema, data);
 assertType(userSchema, data);
 ```
 
+If you don't want to throw an error, but still want to access the error message, you can pass a callback to `checkType` that is called with the error when a type check fails:
+
+```ts
+const isUser = checkType(userSchema, data, (err) => console.warn(err.message));
+```
+
 ## Reference
 
 ### Primitive Types
@@ -75,6 +81,14 @@ You can validate arrays by using `ty.array(...)`. This function takes another va
 
 ```ts
 const stringArraySchema = ty.array(ty.string()); // string[]
+```
+
+### Unknown types
+
+Sometimes it can be useful to allow any type, for example when trying to validate that something is an array, without caring about the specific types. This can be done using `ty.unknown()`:
+
+```ts
+const unknownArray = ty.array(ty.unknown()); // unknown[]
 ```
 
 ### String Unions
