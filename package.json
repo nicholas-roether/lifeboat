@@ -1,8 +1,15 @@
 {
   "name": "lifeboat",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Dead simple typescript type guard generation",
-  "keywords": ["typescript", "schema", "validation", "guard", "type", "inference"],
+  "keywords": [
+    "typescript",
+    "schema",
+    "validation",
+    "guard",
+    "type",
+    "inference"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "repository": "https://github.com/nicholas-roether/lifeboat.git",
