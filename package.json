@@ -12,7 +12,10 @@
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "repository": "https://github.com/nicholas-roether/lifeboat.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nicholas-roether/lifeboat.git"
+  },
   "author": "Nicholas Roether <nicholas.roether@t-online.de>",
   "license": "MIT",
   "packageManager": "yarn@3.5.0",
