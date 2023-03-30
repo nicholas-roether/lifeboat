@@ -33,7 +33,7 @@ class ValidationError {
  */
 class ValidationAssertionError extends Error {
 	constructor(err: ValidationError, context: string) {
-		super(`${context}: ${err}`);
+		super(`${context}: ${err.message}`);
 	}
 }
 
@@ -75,7 +75,7 @@ abstract class Validator<T> {
 		if (!res.valid) {
 			throw new ValidationAssertionError(
 				res.error,
-				context ?? "Validation assertion failed"
+				context ?? "Type assertion failed"
 			);
 		}
 	}

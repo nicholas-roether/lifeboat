@@ -1,5 +1,5 @@
 import assert from "assert";
-import ty, { Validator } from ".";
+import ty, { Validator, assertType, checkType } from ".";
 
 describe("ty.undefined", () => {
 	it("allows `undefined`", () => {
@@ -445,5 +445,37 @@ describe("ty.stringUnion", () => {
 			res.error.message,
 			'Expected one of ["a", "b"], found "c"'
 		);
+	});
+});
+
+describe("checkType", () => {
+	it("should return true for accepted values", () => {
+		const schema = ty.string();
+
+		const res = checkType(schema, "a");
+		assert.strictEqual(res, true);
+	});
+
+	it("should return false for non-accepted values", () => {
+		const schema = ty.string();
+
+		const res = checkType(schema, 20);
+		assert.strictEqual(res, false);
+	});
+});
+
+describe("assertType", () => {
+	it("should do nothing for accepted values", () => {
+		const schema = ty.string();
+
+		assert.doesNotThrow(() => assertType(schema, "a"));
+	});
+
+	it("should throw a proper error for non-accepted values", () => {
+		const schema = ty.string();
+
+		assert.throws(() => assertType(schema, 20), {
+			message: "Type assertion failed: Expected type string, found type number"
+		});
 	});
 });
