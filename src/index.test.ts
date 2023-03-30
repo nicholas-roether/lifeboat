@@ -155,6 +155,17 @@ describe("ty.symbol", () => {
 	itDisallowsNullish(ty.symbol(), "Expected type symbol");
 });
 
+describe("ty.unknown", () => {
+	it("allows everything", () => {
+		const schema = ty.unknown();
+
+		assert.strictEqual(schema.validate(""), true);
+		assert.strictEqual(schema.validate(2), true);
+		assert.strictEqual(schema.validate({ a: 3 }), true);
+		assert.strictEqual(schema.validate(null), true);
+	});
+});
+
 describe("ty.object", () => {
 	it("allows properly structured objects", () => {
 		const schema = ty.object({
@@ -469,11 +480,25 @@ describe("checkType", () => {
 		assert.strictEqual(res, true);
 	});
 
+	it("should not call onError for accepted values", () => {
+		const schema = ty.string();
+
+		checkType(schema, "a", () => assert(false));
+	});
+
 	it("should return false for non-accepted values", () => {
 		const schema = ty.string();
 
 		const res = checkType(schema, 20);
 		assert.strictEqual(res, false);
+	});
+
+	it("should call onError with the correct error for non-accepted values", () => {
+		const schema = ty.string();
+
+		checkType(schema, 20, (err) =>
+			assert.strictEqual(err.message, "Expected type string, found type numer")
+		);
 	});
 });
 

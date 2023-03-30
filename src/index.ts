@@ -63,8 +63,13 @@ abstract class Validator<T> {
 	/**
 	 * Don't call this method directly, use the global function `checkType` insteaed
 	 */
-	public _check(val: unknown): val is T {
-		return this.validate(val).valid;
+	public _check(
+		val: unknown,
+		onError?: (err: ValidationError) => void
+	): val is T {
+		const res = this.validate(val);
+		if (!res.valid) onError?.(res.error);
+		return res.valid;
 	}
 
 	/**
@@ -84,6 +89,12 @@ abstract class Validator<T> {
 function valueDescriptor(value: unknown) {
 	if (value === null) return "null";
 	return `type ${typeof value}`;
+}
+
+class UnknownValidator extends Validator<unknown> {
+	public validate(): ValidationResult {
+		return valid();
+	}
 }
 
 class ExactValidator<T> extends Validator<T> {
@@ -310,6 +321,12 @@ const ty = {
 		return new SimpleValidator("string");
 	},
 	/**
+	 * @returns A validator that accepts anything.
+	 */
+	unknown(): Validator<unknown> {
+		return new UnknownValidator();
+	},
+	/**
 	 * @returns A validator that accepts only symbols.
 	 */
 	symbol(): Validator<symbol> {
@@ -450,10 +467,15 @@ const ty = {
  *
  * @param validator The validator to use for validation
  * @param value The value to check
+ * @param onError An optional callback that receives the validation error in case of a rejection
  * @returns A boolean indicating whether `validator` accepts `value`
  */
-function checkType<T>(validator: Validator<T>, value: unknown): value is T {
-	return validator._check(value);
+function checkType<T>(
+	validator: Validator<T>,
+	value: unknown,
+	onError?: (err: ValidationError) => void
+): value is T {
+	return validator._check(value, onError);
 }
 
 /**
