@@ -159,10 +159,10 @@ describe("ty.unknown", () => {
 	it("allows everything", () => {
 		const schema = ty.unknown();
 
-		assert.strictEqual(schema.validate(""), true);
-		assert.strictEqual(schema.validate(2), true);
-		assert.strictEqual(schema.validate({ a: 3 }), true);
-		assert.strictEqual(schema.validate(null), true);
+		assert.strictEqual(schema.validate("").valid, true);
+		assert.strictEqual(schema.validate(2).valid, true);
+		assert.strictEqual(schema.validate({ a: 3 }).valid, true);
+		assert.strictEqual(schema.validate(null).valid, true);
 	});
 });
 
@@ -497,7 +497,7 @@ describe("checkType", () => {
 		const schema = ty.string();
 
 		checkType(schema, 20, (err) =>
-			assert.strictEqual(err.message, "Expected type string, found type numer")
+			assert.strictEqual(err.message, "Expected type string, found type number")
 		);
 	});
 });
