@@ -164,11 +164,16 @@ class ObjectValidator<T extends BasicObject> extends Validator<T> {
 				new ValidationError(`Expected an object, found ${valueDescriptor(val)}`)
 			);
 		}
-		for (const [key, value] of Object.entries(val as BasicObject)) {
-			if (!(key in this.structure)) continue;
-			const res = this.structure[key].validate(value);
-			if (res.valid) continue;
-			return invalid(res.error.wrapPath(`.${key}`));
+		for (const key in this.structure) {
+			if (!(key in val)) {
+				return invalid(
+					new ValidationError(`Missing required property "${key}"`)
+				);
+			}
+			const res = this.structure[key].validate(
+				(val as Record<string, unknown>)[key]
+			);
+			if (!res.valid) return invalid(res.error.wrapPath(`.${key}`));
 		}
 		return valid();
 	}

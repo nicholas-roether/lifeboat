@@ -186,6 +186,19 @@ describe("ty.object", () => {
 		);
 	});
 
+	it("disallows objects with missing properties", () => {
+		const schema = ty.object({
+			val1: ty.number(),
+			val2: ty.number()
+		});
+
+		const res = schema.validate({
+			val1: 69
+		});
+		assert.strictEqual(res.valid, false);
+		assert.strictEqual(res.error.message, 'Missing required property "val2"');
+	});
+
 	it("correctly formats deeply nested errors", () => {
 		const schema = ty.object({
 			val1: ty.number(),
