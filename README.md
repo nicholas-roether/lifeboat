@@ -35,42 +35,81 @@ assertType(userSchema, data);
 
 ## Reference
 
-These are all validators lifeboat provides:
+### Primitive Types
 
-| Validator                                     | Type                                                               |
-| --------------------------------------------- | ------------------------------------------------------------------ |
-| **`ty.undefined()`**                          | `undefined`                                                        |
-| **`ty.boolean()`**                            | `boolean`                                                          |
-| **`ty.number()`**                             | `number`                                                           |
-| **`ty.bigint()`**                             | `bigint`                                                           |
-| **`ty.string()`**                             | `string`                                                           |
-| **`ty.symbol()`**                             | `symbol`                                                           |
-| **`ty.object(structure)`**                    | `object` with structure defined by `structure`, see example        |
-| **`ty.array(itemValidator)`**                 | `ValidatedBy<typeof itemValidator>[]`                              |
-| **`ty.optional(validator)`**                  | `ValidatedBy<typeof validator> \| undefined`                       |
-| **`ty.nullable(validator)`**                  | `ValidatedBy<typeof validator> \| null`                            |
-| **`ty.allowNullish(validator)`**              | `ValidatedBy<typeof validator> \| null \| undefined`               |
-| **`ty.union(validatorA, validatorB)`**        | `ValidatedBy<typeof validatorA> \| ValidatedBy<typeof validatorB>` |
-| **`ty.intersection(validatorA, validatorB)`** | `ValidatedBy<typeof validatorA> & ValidatedBy<typeof validatorB>`  |
-| **`ty.equals(value)`**                        | Only matches values that are strictly equal to `value` (see below) |
-| **`ty.stringUnion(...values)`**               | Union of the provided strings (see below)                          |
+Lifeboat exposes simple validators for primitive types:
 
-### `ty.equals(value)`
+| Validator            | Type        |
+| -------------------- | ----------- |
+| **`ty.undefined()`** | `undefined` |
+| **`ty.boolean()`**   | `boolean`   |
+| **`ty.number()`**    | `number`    |
+| **`ty.bigint()`**    | `bigint`    |
+| **`ty.string()`**    | `string`    |
+| **`ty.symbol()`**    | `symbol`    |
 
-This validator matches only values that are exaclty equal to `value`.
+### Objects
 
-In order for type checking to work correctly here, be sure to always use `as const` like this:
+You can build an object validator by using `ty.object({ ... })`. The function takes an object as a paramter that specifies the object's structure, like this:
 
 ```ts
-const schema = ty.equals(123 as const);
+const exampleSchema = ty.object({
+	id: ty.number(),
+	name: ty.string()
+});
 ```
 
-### `ty.stringUnion(...values)`
-
-This validator exists to support the common pattern of using string unions as enums.
-
-For example, in order to encode a type like `"abc" | "def" | "ghi"`, you would use:
+By default, all properties are required and non-nullable. If you want optional or nullable values, specify them explicitly using `ty.optional`, `ty.nullable`, or `ty.allowNullish`:
 
 ```ts
-const schema = ty.stringUnion("abc", "def", "ghi");
+const exampleSchema = ty.object({
+	optionalVal: ty.optional(ty.string()), // string | undefined
+	nullableVal: ty.nullable(ty.string()), // string | null
+	valOrNullish: ty.allowNullish(ty.string()) // string | null | undefined
+});
 ```
+
+### Arrays
+
+You can validate arrays by using `ty.array(...)`. This function takes another validator that will be used to validate the array's items as a parameter, like this:
+
+```ts
+const stringArraySchema = ty.array(ty.string()); // string[]
+```
+
+### String Unions
+
+You can validate string unions (like `"apple" | "tomato" | "pear"`) by simply using `ty.stringUnion(...)`:
+
+```ts
+const stringUnionSchema = ty.stringUnion("apple", "tomato", "pear"); // "apple" | "tomato" | "pear"
+```
+
+### General Unions and Intersections
+
+Although not recommended, as it makes for less readable error messages, general type unions and intersections are also supported:
+
+```ts
+// Unions
+const stringOrNumber = ty.union(ty.string(), ty.number()); // string | number
+
+// Intersections
+const obj1Schema = ty.object(...); // Obj1
+const obj2Schema = ty.object(...); // Obj2
+const obj1And2 = ty.intersection(obj1Schema, obj2Schema); // Obj1 & Obj2
+```
+
+Note that both `ty.union` and `ty.intersection` currently only take two arguments, as opposed to `ty.stringUnion`. This is because in this general case, type inference doesn't seem to work as well.
+
+### Exact Values
+
+Sometimes it is useful to only allow precise values, particularly when working with unions. This can be done using `ty.equals(...)`:
+
+```ts
+const emptyStringSchema = ty.equals("" as const); // ""
+
+const aCoolNumberSchema = ty.equals(69 as const); // 69
+```
+
+Note that `as const` is required here to make sure the type inference works correctly; without it, typescript would widen the types
+of values like `""` and `69` to `string` and `number` respectively.
