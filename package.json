@@ -8,7 +8,8 @@
     "validation",
     "guard",
     "type",
-    "inference"
+    "inference",
+    "typeguard"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
