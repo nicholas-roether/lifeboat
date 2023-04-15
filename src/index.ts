@@ -58,17 +58,24 @@ function invalid(error: ValidationError): ValidationResultErr {
  * A validator that accepts values of type T.
  */
 abstract class Validator<T> {
+	private lastError: ValidationError | null = null;
+
 	public abstract validate(val: unknown): ValidationResult;
+
+	public get reason(): string {
+		return this.lastError?.message ?? "Unknown reason";
+	}
 
 	/**
 	 * Don't call this method directly, use the global function `checkType` insteaed
 	 */
-	public _check(
-		val: unknown,
-		onError?: (err: ValidationError) => void
-	): val is T {
+	public _check(val: unknown, onError?: (err: string) => void): val is T {
+		this.lastError = null;
 		const res = this.validate(val);
-		if (!res.valid) onError?.(res.error);
+		if (!res.valid) {
+			this.lastError = res.error;
+			onError?.(res.error.message);
+		}
 		return res.valid;
 	}
 
@@ -76,8 +83,10 @@ abstract class Validator<T> {
 	 * Don't call this method directly, use the global function `assertType` insteaed
 	 */
 	public _assert(val: unknown, context?: string): asserts val is T {
+		this.lastError = null;
 		const res = this.validate(val);
 		if (!res.valid) {
+			this.lastError = res.error;
 			throw new ValidationAssertionError(
 				res.error,
 				context ?? "Type assertion failed"
@@ -473,7 +482,7 @@ const ty = {
 function checkType<T>(
 	validator: Validator<T>,
 	value: unknown,
-	onError?: (err: ValidationError) => void
+	onError?: (err: string) => void
 ): value is T {
 	return validator._check(value, onError);
 }
@@ -495,7 +504,7 @@ function assertType<T>(
 
 export default ty;
 
-export { ValidationError, ValidationAssertionError, checkType, assertType };
+export { ValidationAssertionError, checkType, assertType };
 
 export type {
 	Validator,

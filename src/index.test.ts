@@ -493,11 +493,21 @@ describe("checkType", () => {
 		assert.strictEqual(res, false);
 	});
 
+	it("should populate reason", () => {
+		const schema = ty.string();
+
+		checkType(schema, 20);
+		assert.strictEqual(
+			schema.reason,
+			"Expected type string, found type number"
+		);
+	});
+
 	it("should call onError with the correct error for non-accepted values", () => {
 		const schema = ty.string();
 
 		checkType(schema, 20, (err) =>
-			assert.strictEqual(err.message, "Expected type string, found type number")
+			assert.strictEqual(err, "Expected type string, found type number")
 		);
 	});
 });
