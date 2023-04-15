@@ -67,7 +67,7 @@ abstract class Validator<T> {
 	}
 
 	/**
-	 * Don't call this method directly, use the global function `checkType` insteaed
+	 * Don't call this method directly, use the global function `checkType` instead
 	 */
 	public _check(val: unknown, onError?: (err: string) => void): val is T {
 		this.lastError = null;
@@ -80,7 +80,7 @@ abstract class Validator<T> {
 	}
 
 	/**
-	 * Don't call this method directly, use the global function `assertType` insteaed
+	 * Don't call this method directly, use the global function `assertType` instead
 	 */
 	public _assert(val: unknown, context?: string): asserts val is T {
 		this.lastError = null;
