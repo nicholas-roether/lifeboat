@@ -506,7 +506,8 @@ const ty = {
 	 * @param Class The class the value should be an instance of
 	 * @returns A validator that matches instances of `Class`
 	 */
-	instanceof<T>(Class: new (...args: unknown[]) => T): Validator<T> {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	instanceof<T>(Class: new (...args: any[]) => T): Validator<T> {
 		return new InstanceOfValidator(Class);
 	}
 };

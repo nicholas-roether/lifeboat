@@ -474,9 +474,9 @@ describe("ty.stringUnion", () => {
 
 describe("ty.instanceof", () => {
 	it("allows instances of the class", () => {
-		const schema = ty.instanceof(Uint8Array);
+		const schema = ty.instanceof(ArrayBuffer);
 
-		const res = schema.validate(new Uint8Array([1, 2, 3]));
+		const res = schema.validate(new Uint8Array([1, 2, 3]).buffer);
 		assert.strictEqual(res.valid, true);
 	});
 
