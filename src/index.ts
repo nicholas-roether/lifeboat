@@ -479,6 +479,15 @@ const ty = {
  * @param onError An optional callback that receives the validation error in case of a rejection
  * @returns A boolean indicating whether `validator` accepts `value`
  */
+function checkType<T>(validator: Validator<T>, value: unknown): value is T;
+/**
+ * @deprecated
+ */
+function checkType<T>(
+	validator: Validator<T>,
+	value: unknown,
+	onError?: (err: string) => void
+): value is T;
 function checkType<T>(
 	validator: Validator<T>,
 	value: unknown,
