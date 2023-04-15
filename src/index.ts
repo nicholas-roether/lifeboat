@@ -292,6 +292,34 @@ class OptionalValidator<T> extends Validator<T | undefined> {
 	}
 }
 
+class InstanceOfValidator<T> extends Validator<T> {
+	private readonly Class: new (...args: unknown[]) => T;
+
+	constructor(Class: new (...args: unknown[]) => T) {
+		super();
+		this.Class = Class;
+	}
+
+	public validate(val: unknown): ValidationResult {
+		if (val instanceof this.Class) return valid();
+
+		const actualConstructor = val?.constructor?.name;
+		if (actualConstructor) {
+			return invalid(
+				new ValidationError(
+					`Expected instance of ${this.Class.name}, found instance of ${actualConstructor}`
+				)
+			);
+		} else {
+			return invalid(
+				new ValidationError(
+					`Expected instance of ${this.Class.name}, found ${val}`
+				)
+			);
+		}
+	}
+}
+
 type ValidatedBy<V> = V extends Validator<infer T> ? T : never;
 
 /**
@@ -468,6 +496,18 @@ const ty = {
 	 */
 	stringUnion<T extends string>(...values: readonly T[]): Validator<T> {
 		return new StringUnionValidator(...values);
+	},
+	/**
+	 * This method allows you to only accept objects that are an instace of a given class, for example:
+	 *
+	 * ```ts
+	 * const onlyArrayBuffers: ty.instanceof(ArrayBuffer);
+	 * ```
+	 * @param Class The class the value should be an instance of
+	 * @returns A validator that matches instances of `Class`
+	 */
+	instanceof<T>(Class: new (...args: unknown[]) => T): Validator<T> {
+		return new InstanceOfValidator(Class);
 	}
 };
 

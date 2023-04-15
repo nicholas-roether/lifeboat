@@ -472,6 +472,37 @@ describe("ty.stringUnion", () => {
 	});
 });
 
+describe("ty.instanceof", () => {
+	it("allows instances of the class", () => {
+		const schema = ty.instanceof(Uint8Array);
+
+		const res = schema.validate(new Uint8Array([1, 2, 3]));
+		assert.strictEqual(res.valid, true);
+	});
+
+	it("disallows instances of any other class", () => {
+		const schema = ty.instanceof(Uint8Array);
+
+		const res = schema.validate(new Uint16Array([1, 2, 3]));
+		assert.strictEqual(res.valid, false);
+		assert.strictEqual(
+			res.error.message,
+			"Expected instance of Uint8Array, found instance of Uint16Array"
+		);
+	});
+
+	it("disallows null", () => {
+		const schema = ty.instanceof(Uint8Array);
+
+		const res = schema.validate(null);
+		assert.strictEqual(res.valid, false);
+		assert.strictEqual(
+			res.error.message,
+			"Expected instance of Uint8Array, found null"
+		);
+	});
+});
+
 describe("checkType", () => {
 	it("should return true for accepted values", () => {
 		const schema = ty.string();
