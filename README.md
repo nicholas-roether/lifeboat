@@ -33,10 +33,15 @@ const isUser = checkType(userSchema, data);
 assertType(userSchema, data);
 ```
 
-If you don't want to throw an error, but still want to access the error message, you can pass a callback to `checkType` that is called with the error when a type check fails:
+When using `checkType`, you can get a message for why a value was rejected by using the
+`reason` property of the schema, like so:
 
 ```ts
-const isUser = checkType(userSchema, data, (err) => console.warn(err.message));
+if (checkType(userSchema, data)) {
+	// data is a User, do something with it
+} else {
+	console.error(`Not a valid user: ${userSchema.reason}`);
+}
 ```
 
 ## Reference
