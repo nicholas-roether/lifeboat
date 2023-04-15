@@ -61,6 +61,8 @@ Lifeboat exposes simple validators for primitive types:
 
 ### Objects
 
+#### By structure
+
 You can build an object validator by using `ty.object({ ... })`. The function takes an object as a paramter that specifies the object's structure, like this:
 
 ```ts
@@ -79,6 +81,16 @@ const exampleSchema = ty.object({
 	valOrNullish: ty.allowNullish(ty.string()) // string | null | undefined
 });
 ```
+
+#### By class
+
+You can also require that a value be an instance of a particular class, like `ArrayBuffer`, by using `ty.instanceof`.
+
+```ts
+const arrayBufferSchema = ty.instanceof(ArrayBuffer);
+```
+
+Like with the `instanceof` keyword, make sure that you know that the values you expect are actual instances of the class, not just POJOs with the class' structure; especially when your data is deserialized from a source like a network packet.
 
 ### Arrays
 
