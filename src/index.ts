@@ -124,8 +124,8 @@ class ExactValidator<T> extends Validator<T> {
 	}
 }
 
-class StringUnionValidator<T extends string> extends Validator<T> {
-	private values: readonly string[];
+class EnumValidator<T extends string | number> extends Validator<T> {
+	private values: readonly unknown[];
 
 	constructor(...values: readonly T[]) {
 		super();
@@ -133,7 +133,7 @@ class StringUnionValidator<T extends string> extends Validator<T> {
 	}
 
 	public validate(val: unknown): ValidationResult {
-		if (typeof val !== "string" || !this.values.includes(val)) {
+		if (!this.values.includes(val)) {
 			return invalid(
 				new ValidationError(
 					`Expected one of [${this.values
@@ -484,6 +484,35 @@ const ty = {
 		return new ExactValidator(value);
 	},
 	/**
+	 * This method allows you to represent enums - specifically unions of string or number values.
+	 *
+	 * This means that you can for example represent string unions like
+	 * `"apple" | "orange" | "grape"`:
+	 * ```ts
+	 * const fruitSchema = ty.enum("apple", "orange", "grape");
+	 * ```
+	 * Or const enums:
+	 * ```
+	 * const enum Fruit {
+	 *    APPLE,
+	 *    ORANGE,
+	 *    GRAPE
+	 * }
+	 *
+	 * const fruitSchema = ty.enum(Fruit.APPLE, Fruit.ORANGE, Fruit.GRAPE);
+	 * ```
+	 *
+	 * Note that non-const enums do not work like this, because typescript enums are weird.
+	 *
+	 * @param values All values that belong to the enum
+	 * @returns A validator that accepts only the values provided
+	 */
+	enum<T extends string | number>(...values: readonly T[]): Validator<T> {
+		return new EnumValidator(...values);
+	},
+	/**
+	 * @deprecated Use `ty.enum` instead
+	 *
 	 * This method allows you to accept string unions. For example, "abc" | "cde" | "def"
 	 * would be represented like this:
 	 *
@@ -495,7 +524,7 @@ const ty = {
 	 * @returns A validator that matches any string in `values`
 	 */
 	stringUnion<T extends string>(...values: readonly T[]): Validator<T> {
-		return new StringUnionValidator(...values);
+		return new EnumValidator(...values);
 	},
 	/**
 	 * This method allows you to only accept objects that are an instace of a given class, for example:

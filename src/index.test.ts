@@ -452,16 +452,23 @@ describe("ty.equals", () => {
 	});
 });
 
-describe("ty.stringUnion", () => {
-	it("allows correct values", () => {
-		const schema = ty.stringUnion("a", "b");
+describe("ty.enum", () => {
+	it("allows correct string values", () => {
+		const schema = ty.enum("a", "b");
 
 		const res = schema.validate("a");
 		assert.strictEqual(res.valid, true);
 	});
 
-	it("disallows incorrect values", () => {
-		const schema = ty.stringUnion("a", "b");
+	it("allows correct number values", () => {
+		const schema = ty.enum(2, 3);
+
+		const res = schema.validate(2);
+		assert.strictEqual(res.valid, true);
+	});
+
+	it("disallows incorrect string values", () => {
+		const schema = ty.enum("a", "b");
 
 		const res = schema.validate("c");
 		assert.strictEqual(res.valid, false);
@@ -469,6 +476,14 @@ describe("ty.stringUnion", () => {
 			res.error.message,
 			'Expected one of ["a", "b"], found "c"'
 		);
+	});
+
+	it("disallows incorrect string values", () => {
+		const schema = ty.enum(2, 3);
+
+		const res = schema.validate(1);
+		assert.strictEqual(res.valid, false);
+		assert.strictEqual(res.error.message, "Expected one of [2, 3], found 1");
 	});
 });
 
