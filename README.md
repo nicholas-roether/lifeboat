@@ -108,12 +108,22 @@ Sometimes it can be useful to allow any type, for example when trying to validat
 const unknownArray = ty.array(ty.unknown()); // unknown[]
 ```
 
-### String Unions
+### Enums
 
-You can validate string unions (like `"apple" | "tomato" | "pear"`) by simply using `ty.stringUnion(...)`:
+There are two kinds of enums that are supported; string unions (like "apple" | "tomato" | "pear"),
+and const enums (i.e. number unions). You can validate them by using `ty.enum`.
 
 ```ts
-const stringUnionSchema = ty.stringUnion("apple", "tomato", "pear"); // "apple" | "tomato" | "pear"
+const strEnum = ty.enum("apple", "tomato", "pear"); // "apple" | "tomato" | "pear"
+
+// Yes, tomatoes are fruit, fight me
+const enum Fruit {
+	APPLE,
+	TOMATO,
+	PEAR
+}
+
+const constEnum = ty.enum(Fruit.APPLE, Fruit.TOMATO, Fruit.PEAR); // Fruit.APPLE | Fruit.TOMATO | Fruit.PEAR
 ```
 
 ### General Unions and Intersections
