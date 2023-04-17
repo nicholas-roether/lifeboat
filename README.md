@@ -10,9 +10,9 @@ Here's how you might define a simple schema in lifeboat:
 import ty, { ValidatedBy } from "lifeboat";
 
 const userSchema = ty.object({
-	name: ty.string(),
-	age: ty.number(),
-	friendList: ty.array(ty.string())
+   name: ty.string(),
+   age: ty.number(),
+   friendList: ty.array(ty.string())
 });
 
 // You can get access to the corresponding type like this:
@@ -38,9 +38,9 @@ When using `checkType`, you can get a message for why a value was rejected by us
 
 ```ts
 if (checkType(userSchema, data)) {
-	// data is a User, do something with it
+   // data is a User, do something with it
 } else {
-	console.error(`Not a valid user: ${userSchema.reason}`);
+   console.error(`Not a valid user: ${userSchema.reason}`);
 }
 ```
 
@@ -67,8 +67,8 @@ You can build an object validator by using `ty.object({ ... })`. The function ta
 
 ```ts
 const exampleSchema = ty.object({
-	id: ty.number(),
-	name: ty.string()
+   id: ty.number(),
+   name: ty.string()
 });
 ```
 
@@ -76,9 +76,9 @@ By default, all properties are required and non-nullable. If you want optional o
 
 ```ts
 const exampleSchema = ty.object({
-	optionalVal: ty.optional(ty.string()), // string | undefined
-	nullableVal: ty.nullable(ty.string()), // string | null
-	valOrNullish: ty.allowNullish(ty.string()) // string | null | undefined
+   optionalVal: ty.optional(ty.string()), // string | undefined
+   nullableVal: ty.nullable(ty.string()), // string | null
+   valOrNullish: ty.allowNullish(ty.string()) // string | null | undefined
 });
 ```
 
@@ -118,9 +118,9 @@ const strEnum = ty.enum("apple", "tomato", "pear"); // "apple" | "tomato" | "pea
 
 // Yes, tomatoes are fruit, fight me
 const enum Fruit {
-	APPLE,
-	TOMATO,
-	PEAR
+   APPLE,
+   TOMATO,
+   PEAR
 }
 
 const constEnum = ty.enum(Fruit.APPLE, Fruit.TOMATO, Fruit.PEAR); // Fruit.APPLE | Fruit.TOMATO | Fruit.PEAR
