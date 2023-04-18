@@ -170,7 +170,9 @@ type ObjectStructure<T> = {
 	[K in keyof T]: Validator<T[K]>;
 };
 
-class ObjectValidator<T extends BasicObject> extends Validator<T> {
+class ObjectValidator<T extends BasicObject> extends Validator<
+	T & BasicObject
+> {
 	private readonly structure: ObjectStructure<T>;
 
 	constructor(structure: ObjectStructure<T>) {
@@ -387,7 +389,9 @@ const ty = {
 	 * @param structure The structure of the object type
 	 * @returns A validator that accepts only objects with the specified structure
 	 */
-	object<T extends BasicObject>(structure: ObjectStructure<T>): Validator<T> {
+	object<T extends BasicObject>(
+		structure: ObjectStructure<T>
+	): Validator<T & BasicObject> {
 		return new ObjectValidator(structure);
 	},
 	/**

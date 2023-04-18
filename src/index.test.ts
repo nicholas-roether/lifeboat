@@ -1,5 +1,5 @@
 import assert from "assert";
-import ty, { Validator, assertType, checkType } from ".";
+import ty, { ValidatedBy, Validator, assertType, checkType } from ".";
 
 describe("ty.undefined", () => {
 	it("allows `undefined`", () => {
@@ -571,5 +571,15 @@ describe("assertType", () => {
 		assert.throws(() => assertType(schema, 20), {
 			message: "Type assertion failed: Expected type string, found type number"
 		});
+	});
+});
+
+describe("type ValidatedBy", () => {
+	it("should allow not explicitly defined properties for object types", () => {
+		const schema = ty.object({ a: ty.number() });
+
+		type Type = ValidatedBy<typeof schema>;
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
+		const value: Type = { a: 1, b: 2 };
 	});
 });
