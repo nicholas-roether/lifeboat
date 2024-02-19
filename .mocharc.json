@@ -1,5 +1,5 @@
 {
     "extension": ["ts"],
     "spec": "src/**/*.test.ts",
-    "require": "ts-node/register"
+    "loader": "@esbuild-kit/esm-loader"
 }
